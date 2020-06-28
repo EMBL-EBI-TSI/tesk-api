@@ -23,7 +23,7 @@ import static uk.ac.ebi.tsc.tesk.util.constant.K8sConstants.*;
 /**
  * @author Ania Niewielska <aniewielska@ebi.ac.uk>
  * <p>
- * Templates for tasmaster's and executor's job object.
+ * Templates for tasκmaster's and executor's job object.
  */
 @Configuration
 public class KubernetesObjectsSupplier {
@@ -79,6 +79,17 @@ public class KubernetesObjectsSupplier {
                             env.getValueFrom().getSecretKeyRef().setName(this.taskmasterEnvProperties.getFtp().getSecretName());
                         } else {
                             //remove FTP secrets otherwise
+                            toBeRemoved.add(env);
+                        }
+                    });
+
+            containerEnvironment.stream().filter(env -> S3_SECRET_ACCESS_KEY_ENV.equals(env.getName()) || S3_SECRET_SECRET_KEY_ENV.equals(env.getName()))
+                    .forEach(env -> {
+                        if (taskmasterEnvProperties.getS3().isEnabled()) {
+                            //update secret name, if S3 enabled
+                            env.getValueFrom().getSecretKeyRef().setName(this.taskmasterEnvProperties.getS3().getSecretName());
+                        } else {
+                            //remove S3 secrets otherwise
                             toBeRemoved.add(env);
                         }
                     });
